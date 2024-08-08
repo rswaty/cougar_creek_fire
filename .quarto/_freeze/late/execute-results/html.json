@@ -1,0 +1,17 @@
+{
+  "hash": "39e2e75ed7fb3a9c7bb3f00c10f240ba",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Late Succession\"\n---\n\n\n## Historical Late Succession Classes\n\nThe LANDFIRE BpS models include descriptions of succession classes.  These descriptions often split out 'Late' from 'Early' and 'Mid' classes.  Additionally, as presented below, some classes are split into 'Open' and 'Closed' classes.  \n\nFor this chart we lumped all 'Early' and 'Mid' classes together into 'Other', and did not split out 'Open' and 'Closed' classes.  \n\n**Note: 'Late' may or may not include 'old-growth;, which is a different concept.  Go to [https://landfirereview.org/search.php](https://landfirereview.org/search.php){target='blank'} to download descriptions. ** \n\n\n\n::: {.cell}\n::: {.cell-output-display}\n![](late_files/figure-html/unnamed-chunk-1-1.png){width=960}\n:::\n:::\n\n\n\n\n## Comparing late succession past and present, split by open and closed canopy\n\nBelow is a chart comparing modeled past (pre-European colonization) amounts of open and closed late-succession classes per Biophysical Setting.  \n\n* The beginning of each arrow is the past modeled amount; the end of the arrow is how much is mapped today.\n* Arrows/charts do not indicate specific transitions from one succession class to another.  For example there has been a total loss of late-succession in the Northern Hardwood BpS.  We do not indicate here which other succession classes have 'gained' over time.\n* Each BpS has specific rules for what constitutes 'Open' or 'Closed', and some BpSs may not have all classes.  For example, the Northern Pine(Oak) Forest description and model does not have a 'Late-Open' class.  This is also true for the Boreal Jack Pine-Black Spruce Forest - Pine Barrens BpS which was dominated by Early and Mid-Open classes historically.\n* Also note that some BpSs represented a relativily small portion of the landscape.  See 'Past' page.  \n\n\n\n\n::: {.cell}\n::: {.cell-output-display}\n![](late_files/figure-html/unnamed-chunk-2-1.png){width=1152}\n:::\n:::\n",
+    "supporting": [
+      "late_files"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

@@ -1,0 +1,11 @@
+7045,0,51,0,255,Northern Rocky Mountain Dry-Mesic Montane Mixed Conifer Forest
+7047,96,255,71,255,Northern Rocky Mountain Mesic Montane Mixed Conifer Forest
+7053,214,255,181,255,Northern Rocky Mountain Ponderosa Pine Woodland and Savanna
+7106,117,87,61,255,Northern Rocky Mountain Montane-Foothill Deciduous Shrubland
+7134,255,226,130,255,Columbia Basin Foothill and Canyon Dry Grassland
+7299,1,1,1,255,Developed-Roads
+7965,255,237,119,255,Western Cool Temperate Close Grown Crop
+7967,227,212,28,255,Western Cool Temperate Pasture and Hayland
+7968,250,227,163,255,Western Cool Temperate Wheat
+9336,255,105,46,255,Great Basin & Intermountain Ruderal Shrubland
+9828,255,105,46,255,Interior Western North American Temperate Ruderal Grassland

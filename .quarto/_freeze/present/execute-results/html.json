@@ -1,0 +1,17 @@
+{
+  "hash": "e8b9deb6242339013d75f9e613c0397c",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Present: Current Ecosystem Conditions\"\n---\n\n\n\n\nLANDFIRE's [Existing Vegetation Type, Cover and Height](https://landfire.gov/vegetation.php){target=\"blank\"} datasets describe vegetation conditions.\n\n-   Existing Vegetation Type (EVT) - represents the current distribution of the terrestrial ecological systems classification, developed by NatureServe for the western hemisphere, through 2016.\n-   Existing Vegetation Cover (EVC) - represents the vertically projected percent cover of the live canopy layer for a 30-m cell.\n-   Existing Vegetation Height (EVH) - represents the average height of the dominant vegetation for a 30-m cell.\n\n[Read more about LANDFIRE Vegetation Products](https://landfire.gov/vegetation.php){target=\"blank\"}\n\n\n\n## Most Prevalent Existing Vegetation Types\n\n<br>\n\n![](outputs/evt.jpg){width=\"100%\"}\n\n<br>\n\n## Most Prevalent Existing Vegetation Types\n\n\n::: {.cell}\n::: {.cell-output-display}\n![](present_files/figure-html/evt chart-1.png){width=960}\n:::\n:::\n\n\n<br>\n\n## Existing Vegetation Cover\n\nThe Existing Vegetation Cover (EVC) map is a visual representation of EVC classifications across the subregion. The chart below the map provides a breakdown of each vegetation cover classification and their relative distribution across the forest.\n\n![](outputs/evc.jpg){width=\"100%\"} <br> <br>\n\n\n::: {.cell}\n::: {.cell-output-display}\n![](present_files/figure-html/evc chart-1.png){width=960}\n:::\n:::\n\n\n<br>\n\n## Existing Vegetation Height\n\nThe Existing Vegetation Height (EVH) map showcases EVH across the forest. The chart below the map provides the percentage of the landscape represented by each EVH height.\n\n![](outputs/evh.jpg){width=\"100%\"} <br>\n\n\n::: {.cell}\n::: {.cell-output-display}\n![](present_files/figure-html/evh chart-1.png){width=960}\n:::\n:::\n",
+    "supporting": [
+      "present_files"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

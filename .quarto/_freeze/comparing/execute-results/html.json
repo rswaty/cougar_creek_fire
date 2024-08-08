@@ -1,0 +1,21 @@
+{
+  "hash": "6b336e9b81df095a2bca1966d9d42f9a",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Comparisons\"\n---\n\n\n\n\n## Comparing Past vs. Present Conditions\n\nUsing LANDFIRE’s BpS products, we explore two different ways to visualize past vs. current vegetation patterns.\n\n-   First, we present **changes in broad ecosystem types** using an interactive comparison diagram. To present these broad ecosystem trends more effectively, we combined classifications of Existing Vegetation Types (EVT) into broader categories. The Developed EVTs of high, medium, and low intensity, and Quarries-Strip Mines-Gravel Pits EVTs were combined into one \"Developed\" EVT. Exotic Herbaceous and Exotic Tree-shrub EVTs were combined into one \"Exotics\" EVT.\n\n-   Second, we compare **amounts of succession classes** (past and present) for the most prevalent ecosystems.\n\n## Summary\n\n* Conifers, by percentage, were mapped to have experienced the most change between past and present, with over half being mapped as other types (e.g., Hardwoods or Developed) in the Existing Vegetation Type dataset.\n* There are BpSs with substantial over/under representation of succession classes.  For example the Northern Hardwoods-Hemlock currently has no succession class D, and the Jack Pine-Black Spruce Forest-Pine Barrens shows an over-representation of succession class D. \n\n\n** Chord Diagram**\n\n*Note: number presented when hovering equals acres.*\n\n\n\n\n\n<iframe src=\"chord.html\" height=\"720\" width=\"720\" style=\"border: 1px solid #464646;\" allowfullscreen allow=\"autoplay\" data-external=\".5\">\n\n</iframe>\n\n<br>\n\n## Succession classes for three most dominant BpSs\n\n\n\n::: {.cell}\n::: {.cell-output-display}\n![](comparing_files/figure-html/scls chart-1.png){width=960}\n:::\n:::\n",
+    "supporting": [
+      "comparing_files"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {
+      "include-in-header": [
+        "<link href=\"site_libs/htmltools-fill-0.5.8.1/fill.css\" rel=\"stylesheet\" />\n<script src=\"site_libs/htmlwidgets-1.6.4/htmlwidgets.js\"></script>\n<script src=\"site_libs/d3-4.13.0/d3.min.js\"></script>\n<script src=\"site_libs/d3-tip-0.8.1/index.js\"></script>\n<link href=\"site_libs/chorddiag-0.1.2.9000/chorddiag.css\" rel=\"stylesheet\" />\n<script src=\"site_libs/chorddiag-0.1.2.9000/chorddiag.js\"></script>\n"
+      ]
+    },
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

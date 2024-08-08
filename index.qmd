@@ -1,0 +1,62 @@
+---
+title: "Rapid LANDFIRE summary for Cougar Creek Fire"
+author: "Randy Swaty, with substantial code from Myles Walimaa"
+date: 08/08/2024
+---
+
+## About this rapid summary
+
+* Focal area is the [Cougar Creek Fire](https://inciweb.wildfire.gov/incident-information/wases-cougar-creek-fire){target='none'}.  The coarse fire outline was made by Randy Swaty, loosely based off the fire perimeter.
+* No QAQC completed with the maps, charts or code used to create the outputs
+* All code, and datasets available by contacting [Randy Swaty](mailto:rswaty@tnc.org){target="blank"}.
+
+
+
+## Location
+
+<br>
+
+```{r libraries, message=FALSE, warning=FALSE, include=FALSE}
+
+library(foreign)
+library(sf)
+library(terra)
+library(tidyverse)
+library(raster)
+
+
+```
+
+
+```{r read shapefile, message=FALSE, warning=FALSE, include=FALSE}
+#  read shape
+shp <- st_read("inputs/cougar_creek_coarse.shp") %>% 
+  st_transform(crs = 5070) %>%
+  st_union() %>%
+  st_sf()
+```
+
+```{r locator map, message=FALSE, warning=FALSE, echo=FALSE}
+library(tmap)
+
+# toggle tmap mode to interactive viewing
+tmap_mode("view")
+
+# create a quick interactive map
+quickmap <- qtm(shp, 
+                borders = "darkgreen", 
+                fill = NULL, 
+                check.and.fix = TRUE, 
+                basemaps = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+                title = 'Cougar Creek',)
+
+quickmap
+
+
+
+```
+
+
+
+
+

@@ -1,0 +1,440 @@
+---
+title: "Present: Current Ecosystem Conditions"
+---
+
+```{r process data,  include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+
+library(foreign)
+library(raster)
+library(sf)
+library(terra)
+library(tidyverse)
+
+landscape_name <- "Cougar Creek"
+
+
+# Read the shapefile from the "inputs/" directory
+shp <- st_read("inputs/cougar_creek_coarse.shp") %>% 
+  # Transform the coordinate reference system to EPSG:5070
+  st_transform(crs = 5070) %>%
+  # Union all geometries into a single geometry
+  st_union() %>%
+  # Convert the result back to an sf object
+  st_sf()
+
+# EVT -----------------------------
+
+# Load and process the raster data
+evt_aoi <- rast("inputs/LF2023_EVT_240_CONUS/LC23_EVT_240.tif") %>%  # Load the raster file
+  crop(shp) %>%  # Crop the raster to the extent of the shapefile 'shp'
+  mask(shp)  # Mask the raster using the shapefile 'shp'
+
+# Load the CSV file containing attributes for the EVT data
+evt_conus_atts <- read.csv("inputs/LF2023_EVT_240_CONUS/LF23_EVT_240.csv")  # Read the CSV file into a dataframe
+
+# Assign the attribute table to the raster levels
+levels(evt_aoi)[[1]] <- evt_conus_atts
+
+# Set the active category for the raster to "VALUE"
+activeCat(evt_aoi) <- "VALUE"
+
+# Extract values from the raster, convert to a dataframe, and process
+evt_aoi_atts <- values(evt_aoi, dataframe = TRUE, na.rm = TRUE) %>%  # Extract values from the raster as a dataframe, removing NA values
+  table(dnn = "VALUE") %>%  # Create a frequency table of the values
+  as.data.frame() %>%  # Convert the table to a dataframe
+  mutate_all(as.character) %>%  # Convert all columns to character type
+  mutate_all(as.integer) %>%  # Convert all columns to integer type
+  left_join(cats(evt_aoi)[[1]], by = "VALUE") %>%  # Join with the raster categories by "VALUE"
+  filter(Freq != 0) %>%  # Filter out rows with a frequency of 0
+  mutate(ACRES = round((Freq * 900 / 4046.86), 0),  # Calculate acres and round to the nearest integer
+         REL_PERCENT = round((Freq / sum(Freq)), 3) * 100)  # Calculate relative percentage and round to 3 decimal places
+
+# Write the processed raster to a file
+writeRaster(evt_aoi, "outputs/evt_aoi.tif",
+            gdal = c("COMPRESS=NONE", "TFW=YES"),  # Specify GDAL options
+            datatype = "INT2S",  # Set the data type to signed 16-bit integer
+            overwrite = TRUE)  # Allow overwriting of existing files
+
+# Write the attribute table to a DBF file
+write.dbf(evt_aoi_atts, "outputs/evt_aoi.tif.vat.dbf")
+
+# Write the attribute table to a CSV file
+write.csv(evt_aoi_atts, "outputs/evt_aoi_attributes.csv")
+
+
+# Create a color file for use in QGIS
+EVTColorFile <- evt_aoi_atts %>%
+  subset(EVT_NAME != "Open Water" & EVT_NAME != "Barren-Rock/Sand/Clay") %>%  # Exclude specific EVT names
+  top_n(n = 10, wt = REL_PERCENT) %>%  # Select the top 10 entries based on relative percentage
+  add_column(z = 255) %>%  # Add a new column 'z' with a constant value of 255
+  dplyr::select(VALUE,  # Select specific columns for the output
+                R,
+                G,
+                B,
+                z,
+                EVT_NAME)
+
+# Write the color file to a text file
+write.table(EVTColorFile, file = "outputs/EVTColorFile.txt", sep = ",",  # Specify the file path and separator
+            row.names = FALSE, col.names = FALSE, quote = FALSE)  # Exclude row and column names, and disable quoting
+
+# EVC -----------------------------
+
+
+evc_aoi <- rast("inputs/LF2023_EVC_240_CONUS/LC23_EVC_240.tif") %>%
+  crop(shp) %>%
+  mask(shp)
+
+
+evc_conus_atts <- read.csv("inputs/LF22_EVC_230_acc.csv")
+
+# Load the CSV file containing attributes for the EVC data
+evc_conus_atts <- read.csv("inputs/LF22_EVC_230_acc.csv")
+
+# Assign the attribute table to the raster levels
+levels(evc_aoi)[[1]] <- evc_conus_atts
+
+# Set the active category for the raster to "VALUE"
+activeCat(evc_aoi) <- "VALUE"
+
+# Extract values from the raster, convert to a dataframe, and process
+evc_aoi_atts <- values(evc_aoi, dataframe = TRUE, na.rm = TRUE) %>%  # Extract values from the raster as a dataframe, removing NA values
+  table(dnn = "VALUE") %>%  # Create a frequency table of the values
+  as.data.frame() %>%  # Convert the table to a dataframe
+  mutate_all(as.character) %>%  # Convert all columns to character type
+  mutate_all(as.integer) %>%  # Convert all columns to integer type
+  left_join(cats(evc_aoi)[[1]], by = "VALUE") %>%  # Join with the raster categories by "VALUE"
+  filter(Freq != 0) %>%  # Filter out rows with a frequency of 0
+  mutate(ACRES = round((Freq * 900 / 4046.86), 0),  # Calculate acres and round to the nearest integer
+         REL_PERCENT = round((Freq / sum(Freq)), 3) * 100)  # Calculate relative percentage and round to 3 decimal places
+
+# Write the processed raster to a file
+writeRaster(evc_aoi, "outputs/evc_aoi2.tif",
+            gdal = c("COMPRESS=NONE", "TFW=YES"),  # Specify GDAL options
+            datatype = "INT2S",  # Set the data type to signed 16-bit integer
+            overwrite = TRUE)  # Allow overwriting of existing files
+
+# Write the attribute table to a DBF file
+write.dbf(evc_aoi_atts, "outputs/evc_aoi.tif.vat.dbf")
+
+## write csv for fun
+write.csv(evc_aoi_atts, "outputs/evc_aoi_attributes.csv")
+
+## EVC color file for use in QGIS
+EVCColorFile <- evc_aoi_atts    %>%
+      add_column(z = 255)     %>%
+      dplyr::select(VALUE,
+                    R,
+                    G,
+                    B,
+                    z,
+                    CLASSNAMES) 
+    
+    
+write.table(EVCColorFile, file = "outputs/EVCColorFile.txt", sep = ",",
+                row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+
+# EVH ---------------------------------
+
+evh_aoi <- terra::rast("inputs/LF2023_EVH_240_CONUS/LC23_EVH_240.tif") %>%
+  crop(shp) %>%
+  mask(shp)
+
+
+evh_conus_atts <- read.csv("inputs/LF22_EVH_230_acc.csv")
+
+
+# Assign the attribute table to the raster levels
+levels(evh_aoi)[[1]] <- evh_conus_atts
+
+# Set the active category for the raster to "VALUE"
+activeCat(evh_aoi) <- "VALUE"
+
+# Extract values from the raster, convert to a dataframe, and process
+evh_aoi_atts <- values(evh_aoi, dataframe = TRUE, na.rm = TRUE) %>%  # Extract values from the raster as a dataframe, removing NA values
+  table(dnn = "VALUE") %>%  # Create a frequency table of the values
+  as.data.frame() %>%  # Convert the table to a dataframe
+  mutate_all(as.character) %>%  # Convert all columns to character type
+  mutate_all(as.integer) %>%  # Convert all columns to integer type
+  left_join(cats(evh_aoi)[[1]], by = "VALUE") %>%  # Join with the raster categories by "VALUE"
+  filter(Freq != 0) %>%  # Filter out rows with a frequency of 0
+  mutate(ACRES = round((Freq * 900 / 4046.86), 0),  # Calculate acres and round to the nearest integer
+         REL_PERCENT = round((Freq / sum(Freq)), 3) * 100)  # Calculate relative percentage and round to 3 decimal places
+
+# Write the processed raster to a file
+writeRaster(evh_aoi, "outputs/evh_aoi.tif",
+            gdal = c("COMPRESS=NONE", "TFW=YES"),  # Specify GDAL options
+            datatype = "INT2S",  # Set the data type to signed 16-bit integer
+            overwrite = TRUE)  # Allow overwriting of existing files
+
+# Write the attribute table to a DBF file
+write.dbf(evh_aoi_atts, "outputs/evh_aoi.tif.vat.dbf")
+
+## write csv for fun
+write.csv(evh_aoi_atts, "outputs/evh_aoi_attributes.csv")
+
+EVHColorFile <- evh_aoi_atts    %>%
+      add_column(z = 255)     %>%
+      dplyr::select(VALUE,
+                    R,
+                    G,
+                    B,
+                    z,
+                    CLASSNAMES) 
+    
+    
+write.table(EVHColorFile, file = "outputs/EVHColorFile.txt", sep = ",",
+                row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+
+```
+
+LANDFIRE's [Existing Vegetation Type, Cover and Height](https://landfire.gov/vegetation.php){target="blank"} datasets describe vegetation conditions.
+
+-   Existing Vegetation Type (EVT) - represents the current distribution of the terrestrial ecological systems classification, developed by NatureServe for the western hemisphere, through 2016.
+-   Existing Vegetation Cover (EVC) - represents the vertically projected percent cover of the live canopy layer for a 30-m cell.
+-   Existing Vegetation Height (EVH) - represents the average height of the dominant vegetation for a 30-m cell.
+
+[Read more about LANDFIRE Vegetation Products](https://landfire.gov/vegetation.php){target="blank"}
+
+
+
+## Most Prevalent Existing Vegetation Types
+
+<br>
+
+![](outputs/evt.jpg){width="100%"}
+
+<br>
+
+## Most Prevalent Existing Vegetation Types
+
+```{r evt chart, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=10}
+
+library(tidyverse)
+evtname <- read.csv(file = "outputs/evt_aoi_attributes.csv") %>%
+  group_by(EVT_NAME) %>%
+  summarize(ACRES = sum(ACRES),
+            REL_PERCENT = sum(REL_PERCENT)) %>%
+  arrange(desc(REL_PERCENT)) %>%
+  filter(!EVT_NAME %in% c("Open Water","Developed-Roads")) %>% 
+  top_n(n = 10, wt = REL_PERCENT)
+
+# plot
+evtChart <-
+  ggplot(data = evtname, aes(x = EVT_NAME, y = REL_PERCENT)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Top 10 Existing Vegetation Types",
+    caption = "Data from landfire.gov",
+    x = "",
+    y = "Percent of landscape") +
+  scale_x_discrete(limits = rev(evtname$EVT_NAME),
+                   labels = function(x) str_wrap(x, width = 18)) +
+  coord_flip() +
+  theme_bw(base_size = 14)
+
+
+
+evtChart
+```
+
+<br>
+
+## Existing Vegetation Cover
+
+The Existing Vegetation Cover (EVC) map is a visual representation of EVC classifications across the subregion. The chart below the map provides a breakdown of each vegetation cover classification and their relative distribution across the forest.
+
+![](outputs/evc.jpg){width="100%"} <br> <br>
+
+```{r evc chart, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=10}
+
+
+# Load necessary libraries
+library(tidyverse)
+library(ggplot2)
+library(forcats)
+
+# Create "type" column based on conditions
+evcname <- evc_aoi_atts %>% 
+  mutate(type = case_when(
+    VALUE %in% 11 ~ "Open Water",
+    VALUE %in% 12 ~ "Snow / Ice",
+    VALUE %in% 13:25 ~ "Developed",
+    VALUE %in% 31 ~ "Barren",
+    VALUE %in% 60:70 ~ "Agriculture",
+    VALUE %in% 32 ~ "Quarries",
+    VALUE %in% 100 ~ "Sparse Vegetation",
+    VALUE %in% 101:199 ~ "Tree",
+    VALUE %in% 201:299 ~ "Shrub",
+    VALUE %in% 301:399 ~ "Herb",
+    TRUE ~ "Other"
+  ))
+
+# Create reverse substr() function
+revSubstr <- function(x, start, stop) {
+  x <- strsplit(x, "")
+  sapply(x, function(x) paste(rev(rev(x)[start:stop]), collapse = ""), USE.NAMES = FALSE)
+}
+
+# Create cover column based on 2nd and 3rd to last VALUEs of CLASSNAMES
+# If "Other" type, make 0
+evcname <- evcname %>% 
+  mutate(cover = as.numeric(if_else(VALUE > 100,
+                                    revSubstr(evcname$CLASSNAMES, start = 2, stop = 3),
+                                    "0")))
+
+# Create bin breaks for grouping
+breaks <- seq(0, 100, 10)
+
+# Create intervals for grouping and summarize
+# Also create factor order for "type"
+evcgroup <- evcname %>%
+  mutate(interval = cut(cover, breaks, include.lowest = TRUE, right = TRUE,
+                        labels = c("0-9", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69", 
+                                   "70-79", "80-89", "90-100")),
+         type = factor(type, levels = c("Tree", "Shrub", "Herb", "Open Water", "Snow / Ice", 
+                                        "Developed", "Agriculture", "Sparse Vegetation", 
+                                        "Barren", "Quarries", "Other"))) %>%
+  group_by(type, interval) %>%
+  summarize(COUNT = sum(Freq),
+            acres = sum(ACRES),
+            rel_percent = sum(REL_PERCENT))
+
+# Add label and legend names based on condition
+evcgroup <- evcgroup %>% 
+  mutate(label = if_else(type %in% c("Tree", "Shrub", "Herb"),
+                         paste0(type, " Cover = ", interval, "%"), as.character(type)),
+         legend = if_else(type %in% c("Tree", "Shrub", "Herb", "Open Water"),
+                          type, as.factor("Other")))
+
+# Turn current label order to factors
+evclabel.list <- evcgroup$label
+evcgroup <- evcgroup %>% 
+  mutate(label = fct_rev(factor(label, evclabel.list)))
+
+# Join in custom cols column to color bars by specific label
+evc_group_cols <- read.csv("inputs/evc_group_acc.csv")
+evcgroup <- left_join(evcgroup, evc_group_cols, by = "label")
+
+# Reorder labels
+evcgroup$label <- factor(evcgroup$label, levels = rev(evcgroup$label))
+
+# Filter out low relative percentages
+evcgroup <- evcgroup %>%
+  filter(rel_percent > 0.01)
+
+# Plot
+evcChart <- ggplot(data = evcgroup, aes(x = label, y = rel_percent, fill = colors)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Existing Vegetation Cover",
+    caption = "Data from landfire.gov",
+    x = "Amount of landscape",
+    y = "Most dominant lifeform"
+  ) +
+  scale_fill_identity() +
+  coord_flip() +
+  theme_classic(base_size = 12) +
+  theme(legend.position = "none")
+
+# Display the plot
+print(evcChart)
+
+```
+
+<br>
+
+## Existing Vegetation Height
+
+The Existing Vegetation Height (EVH) map showcases EVH across the forest. The chart below the map provides the percentage of the landscape represented by each EVH height.
+
+![](outputs/evh.jpg){width="100%"} <br>
+
+```{r evh chart, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=10}
+
+
+# Create a new dataframe 'evhname' with additional columns 'type' and 'height_m'
+evhname <- evh_aoi_atts %>% 
+  mutate(
+    type = case_when(
+      VALUE %in% 11 ~ "Open Water",
+      VALUE %in% 12 ~ "Snow / Ice",
+      VALUE %in% 13:25 ~ "Developed",
+      VALUE %in% 31 ~ "Barren",
+      VALUE %in% 60:70 ~ "Agriculture",
+      VALUE %in% 32 ~ "Quarries",
+      VALUE %in% 100 ~ "Sparse Vegetation",
+      VALUE %in% 101:199 ~ "Tree",
+      VALUE %in% 201:299 ~ "Shrub",
+      VALUE %in% 301:399 ~ "Herb",
+      TRUE ~ "Other"
+    ),
+    height_m = case_when(
+      type == "Tree" ~ VALUE - 100,
+      type == "Shrub" ~ (VALUE - 200) / 10,
+      type == "Herb" ~ (VALUE - 300) / 10,
+      TRUE ~ 0
+    ) %>% as.character() %>% as.numeric()
+  )
+
+# Define bin breaks for grouping
+breaks <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100)
+
+# Create intervals for grouping and summarize data
+evhgroup <- evhname %>%
+  mutate(
+    interval = cut(height_m, breaks, include.lowest = TRUE, right = FALSE,
+                   labels = c("0", "0.1-0.2", "0.2-0.3", "0.3-0.4", "0.4-0.5", "0.5-0.6", "0.6-0.7", "0.7-0.8", "0.8-0.9", "0.9-1.0", "1-5", "5-10", "10-15", "15-20", "20-25", "25-30", "30-35", "35-40", "40-45", "45-50", "50-55", "55-60", "60-65", "65-70", "70-75", "75-80", "80-85", "85-90", "90-95", "95-100")),
+    type = factor(type, levels = c("Tree", "Shrub", "Herb", "Open Water", "Snow / Ice", "Developed", "Agriculture", "Sparse Vegetation", "Barren", "Quarries", "Other"))
+  ) %>%
+  group_by(type, interval) %>%
+  summarise(
+    COUNT = sum(Freq),
+    acres = sum(ACRES),
+    rel_percent = sum(REL_PERCENT)
+  )
+
+# Add label and legend names based on condition
+evhgroup <- evhgroup %>%
+  mutate(
+    label = if_else(type %in% c("Tree", "Shrub", "Herb"),
+                    paste0(type, " Height = ", interval, " m"), as.character(type)),
+    legend = if_else(type %in% c("Tree", "Shrub", "Herb", "Open Water"),
+                     type, as.factor("Other"))
+  )
+
+# Turn current label order to factors
+evhlabel.list <- evhgroup$label
+evhgroup <- evhgroup %>%
+  mutate(label = fct_rev(factor(label, evhlabel.list)))
+
+# Join in custom columns to color bars by specific label
+evh_group_cols <- read.csv("inputs/evh_group_acc.csv")
+evhgroup <- left_join(evhgroup, evh_group_cols, by = "label")
+
+# Reorder labels
+evhgroup$label <- factor(evhgroup$label, levels = rev(evhgroup$label))
+
+# Filter out rows with relative percentage less than 0.01
+evhgroup <- evhgroup %>%
+  filter(rel_percent > 0.01)
+
+# Plot the data
+evhChart <- ggplot(data = evhgroup, aes(x = label, y = rel_percent, fill = colors)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Existing Vegetation Height",
+    subtitle = landscape_name,
+    caption = "\nData from landfire.gov.",
+    x = "",
+    y = "Percent of landscape"
+  ) +
+  scale_fill_identity() +
+  coord_flip() +
+  theme_bw()
+
+# Display the plot
+evhChart
+```
